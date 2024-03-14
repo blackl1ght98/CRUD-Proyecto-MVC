@@ -1,0 +1,43 @@
+﻿@using IntroASP.Models.ViewModels
+@model BeerViewModel
+<h1>Crear Cervezas</h1>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <!--Los label estos con el BrandId  van a  tomar el display que hemos puesto en beerViewModel-->
+            <div class="form-group">
+                <!--asp-for es para decir con que se va a relacionar-->
+                <!--con esto asp-for="Name" conseguimos el binding con nuestro modelo-->
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control"/>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <!--asp-for es para decir con que se va a relacionar-->
+               
+                <label asp-for="BrandId" class="control-label"></label>
+                <!--Esto fue lo que se puso en el controller ViewData["Brands"] = new SelectList(_context.Brands, "BrandId", "Name");
+                 pues el nombre puesto entre corchetes para acceder ha este Viewdate se pone en el html
+                asp-items="ViewBag.Brands" que Brands corresponde con el nombre de ViewData-->
+                <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands"></select>
+                <span asp-validation-for="BrandId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Crear" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+
+</div>
+<!--Para que funcionen las validaciones que hemos puesto tenemos que poner un section, un section es para poner algo
+    en un lugar de tu pantalla principal la pantalla principal es el _Layaout.cshtml que comparten las vistas 
+    ¿porque se tiene que llamar Scripts? la razon es sencilla porque en el layaout principal se llama asi aqui se puede poner 
+    codigo js o otro tipo de codigo
+-->
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
