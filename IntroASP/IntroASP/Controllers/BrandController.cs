@@ -1,5 +1,7 @@
 ﻿using IntroASP.Models;
+using IntroASP.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace IntroASP.Controllers
@@ -34,8 +36,116 @@ namespace IntroASP.Controllers
         }
         //Manera avanzada
         //public async Task<IActionResult> Index2()
-        
+
         // => View(await _context.Brands.ToListAsync());
+        public IActionResult Create()
+        {
+
+           
+            return View();
+        }
         
+        [HttpPost]
+       
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(BrandViewModel model)
+        {
+            //Esto toma en cuenta las validaciones puestas en BeerViewModel
+            if (ModelState.IsValid)
+            {
+                var beer = new Brand()
+                {
+                    Name = model.Name,
+                    BrandId = model.BrandId,
+                };
+                _context.Add(beer);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            return View(model);
+
+        }
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var brand = await _context.Brands
+
+    .FirstOrDefaultAsync(m => m.BrandId == id);
+
+            if (brand == null)
+            {
+                return NotFound();
+            }
+
+            return View(brand);
+        }
+
+
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        //Para que detecte la id de la cerveza es necesario poner el mismo nombre que se ponga en la vista en la
+        //parte del asp-for del formulario
+        public async Task<IActionResult> DeleteConfirmed(int BrandId)
+        {
+            var brand = await _context.Brands.Include(x=>x.Beers).FirstOrDefaultAsync(m => m.BrandId == BrandId);
+            if (brand == null)
+            {
+                return BadRequest();
+            }
+            _context.Beers.RemoveRange(brand.Beers);
+            _context.Brands.Remove(brand);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+        public async Task<ActionResult> Edit(int id)
+        {
+            Brand brand = await _context.Brands.FindAsync(id);
+            return View(brand);
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> Edit(Brand brand)
+        {
+            //Esta línea verifica si el modelo Beer es válido. Esto significa que todos los campos
+            //requeridos están presentes y que todos los datos cumplen con las reglas de validación.
+            if (ModelState.IsValid)
+            {
+                try
+
+                {
+                    // Estas líneas intentan actualizar el objeto Beer en la base de datos.
+                    // _context.Entry(beer).State = EntityState.Modified; marca el objeto Beer como modificado,
+                    // lo que significa que se deben guardar los cambios en la base de datos.
+                    // await _context.SaveChangesAsync(); guarda los cambios en la base de datos.
+                    _context.Entry(brand).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BeerExists(brand.BrandId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction("Index");
+            }
+            return View(brand);
+        }
+
+        private bool BeerExists(int BrandId)
+        {
+            Console.WriteLine("BeerId: " + BrandId);  // Agrega esta línea para depurar
+            return _context.Brands.Any(e => e.BrandId == BrandId);
+        }
     }
 }

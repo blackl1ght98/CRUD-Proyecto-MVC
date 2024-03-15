@@ -73,3 +73,4 @@ C:\Users\guill\OneDrive\Escritorio\Glucontrol NO BORRAR\proyectos mvc\IntroASP\I
 C:\Users\guill\OneDrive\Escritorio\Glucontrol NO BORRAR\proyectos mvc\IntroASP\IntroASP\obj\Debug\net7.0\IntroASP.pdb
 C:\Users\guill\OneDrive\Escritorio\Glucontrol NO BORRAR\proyectos mvc\IntroASP\IntroASP\obj\Debug\net7.0\IntroASP.genruntimeconfig.cache
 C:\Users\guill\OneDrive\Escritorio\Glucontrol NO BORRAR\proyectos mvc\IntroASP\IntroASP\obj\Debug\net7.0\ref\IntroASP.dll
+C:\Users\guill\OneDrive\Escritorio\Glucontrol NO BORRAR\proyectos mvc\IntroASP\IntroASP\bin\Debug\net7.0\libman.json

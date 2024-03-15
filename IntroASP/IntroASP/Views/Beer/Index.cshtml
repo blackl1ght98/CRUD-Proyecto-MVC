@@ -21,7 +21,12 @@
                     puedas darle un formato. permite controlar cómo se muestran los datos de tu modelo en la vista de una manera limpia y consistente.
                 -->
                 <td>@Html.DisplayFor(m=>beer.Name)</td>
-                <td>@Html.DisplayFor(m=>beer.Brand.Name)</td>
+                    @foreach(var brand in Model)
+                    {
+                    <td>@Html.DisplayFor(m => beer.Brand.Name)</td>
+    }
+                
+                
                 <td>
                     <a asp-action="Delete" asp-route-id="@beer.BeerId" class="btn btn-danger">Delete</a>
 

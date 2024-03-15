@@ -17,7 +17,9 @@ namespace IntroASP.Controllers
         {
             _context = context;
         }
-        //Obtiene datos
+        //Obtiene datos, para tener como una plantilla donde poner las operaciones a realizar esto
+        //lo tiene cualquier vista mvc lo cual hace que tu pagina sea mucho mas interactiva al usuario
+        //y mejora la comprension de la misma
         public  async Task<IActionResult> Index()
         {
             var beers= await _context.Beers.Include(x=>x.Brand).ToListAsync();
@@ -26,7 +28,7 @@ namespace IntroASP.Controllers
         //Porque dos metodos create facil uno trae los datos y el otro los crea
         public IActionResult Create()
         {
-           
+           //obtiene los datos para el desplegable que se va a crear
             ViewData["Brands"] = new SelectList(_context.Brands, "BrandId", "Name");
             return View();
         }
@@ -60,12 +62,12 @@ namespace IntroASP.Controllers
             //diccionario tambien llega no como modelo pero llega como un diccionario al cual puedes acceder 
             //desde la vista para acceder a este diccionario basta con poner:
             /*ViewData["Brands"]--> El nombre entre corchetes puede ser el que queramos nosotros.
-             * new SelectList()--> recibe 4 parametros:
+             * new SelectList()-->Crea una lista desplegable que recibe 4 parametros
+             * 
              *    _context.Brands: uno es la funente de informacion.
-             *   "BrandId": como segundo parametro se pone la informacion que queramos obtener en este caso la informacion que tenga el id en este caso es BrandId.
+             *   "BrandId": como segundo parametro se obtiene la id de cada marca que lo que tiene asociado esa id es un nombre
              *    "Name": como tercer parametro es la informacion que va a ver el usuario que es el Nombre(Name) que esta relacionada con el BrandId.
-             *    model.BrandId: como cuarto parametro tenemos que decir cual hemos seleccionado  que esto se consigue poniendo el modelo y lo que selecciones(el Nombre)
-             *    deberia estar vinculado a brandId
+             *    model.BrandId:  Este es el valor seleccionado en la lista desplegable. En este caso se  está utilizando el ID de la marca seleccionada en el modelo.
              * 
              * La informacion que va al formulario es BrandId pero la que se muestra es el Name
              * Para  obtener la fuente de informacion ponemos esto _context.Brands como primer parametro

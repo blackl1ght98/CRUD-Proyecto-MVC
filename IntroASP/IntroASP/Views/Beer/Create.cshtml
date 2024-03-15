@@ -21,6 +21,12 @@
                 <!--Esto fue lo que se puso en el controller ViewData["Brands"] = new SelectList(_context.Brands, "BrandId", "Name");
                  pues el nombre puesto entre corchetes para acceder ha este Viewdate se pone en el html
                 asp-items="ViewBag.Brands" que Brands corresponde con el nombre de ViewData-->
+                <!--asp-items: genera las opciones de una lista.  El valor de asp-items debe ser una colección de 
+                objetos SelectListItem, que es lo que se crea cuando haces new SelectList().-->
+                <!--Explicacion de viewBag: En tu caso, estás asignando la lista de marcas a ViewData["Brands"] 
+                en el controlador y luego estás pasando esa lista a la vista a través de ViewBag.Brands. ViewBag 
+                es similar a ViewData en que te permite pasar datos del controlador a la vista, pero ViewBag utiliza 
+                propiedades dinámicas en lugar de un diccionario-->
                 <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands"></select>
                 <span asp-validation-for="BrandId" class="text-danger"></span>
             </div>
