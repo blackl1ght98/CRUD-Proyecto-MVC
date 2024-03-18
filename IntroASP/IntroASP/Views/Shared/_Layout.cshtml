@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - IntroASP</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/IntroASP.styles.css" asp-append-version="true" />
+    <style>
+        .navbar-custom {
+            background-color:aquamarine;
+            transition: all 0.3s ease;
+        }
+
+            .navbar-custom .nav-link:hover {
+                color: black;
+                transform: scale(1.1);
+                margin-left:2rem;
+               
+            }
+
+         
+            .button-menu{
+                margin-left:2rem;
+            }
+    </style>
+</head>
+<body>
+    <button class="btn btn-primary  mt-3 button-menu " type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+        <i class="bi bi-list"></i>
+    </button>
+    <div class="offcanvas offcanvas-start navbar-custom" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasExampleLabel">IntroASP</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Brand" asp-action="Index">Marca</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Beer" asp-action="Index">Cervezas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Usuarios</a>
+                </li>
+                <!--Tu puedes traerte cualquier funcionalidad de algun controlador fuera de el y esta funcionalidad
+                    seguira funcionando, para ello se especifica el controller de donde esta esa funcionalidad asp-controller="User"
+                    y el nombre de la funcionalidad  asp-action="Login" con esa informacion puedes llevarlo a donde quieras
+                -->
+                <!--Para entenderlo mejor analizemoslo con una situacion del mundo real:
+                 Imagina que tienes una carta (la funcionalidad) que quieres enviar a un amigo que vive en 
+                 otra ciudad (otra parte de tu aplicación). Para hacerlo, necesitas dos cosas: la dirección de tu amigo 
+                 (el controlador) y el nombre de tu amigo (la acción).
+                 En este caso, asp-controller="User" sería la ciudad a la que quieres enviar la carta, 
+                 y asp-action="Login" sería el nombre de tu amigo. Al igual que en el sistema de correo, 
+                 puedes enviar la misma carta a diferentes amigos (funcionalidades a diferentes controladores) 
+                 o puedes enviar diferentes cartas al mismo amigo (diferentes funcionalidades al mismo controlador).
+                -->
+                <li class="nav-item">
+                    <a asp-controller="User" asp-action="Login" class="btn btn-info mt-2">Iniciar sesion</a>
+
+                </li>
+                <li class="nav-item">
+                    <a asp-controller="User" asp-action="Logout" class="btn btn-warning mt-2">Cerrar sesion</a>
+
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+       @*  <div class="container">
+            © 2024 - IntroASP - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div> *@
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
