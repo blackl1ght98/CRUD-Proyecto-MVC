@@ -12,31 +12,21 @@
         </tr>
 
     </thead>
+
     <tbody>
-    <tbody>
-        @foreach(var beer in Model)
-        {
+            @foreach (var beer in Model)
+            {
             <tr>
-                <!-- El html.displayfor sirve para poder darle formato a la salida de los datos que por ejemplo si es una fecha
-                    puedas darle un formato. permite controlar cómo se muestran los datos de tu modelo en la vista de una manera limpia y consistente.
-                -->
-                <td>@Html.DisplayFor(m=>beer.Name)</td>
-                    @foreach(var brand in Model)
-                    {
-                    <td>@Html.DisplayFor(m => beer.Brand.Name)</td>
-    }
-                
-                
+                <td>@Html.DisplayFor(m => beer.Name)</td>
+                <td>@Html.DisplayFor(m => beer.Brand.Name)</td>
                 <td>
                     <a asp-action="Delete" asp-route-id="@beer.BeerId" class="btn btn-danger">Delete</a>
-
-
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@beer.BeerId" class="btn btn-warning">Update</a>
-
                 </td>
             </tr>
-        }
+            }
     </tbody>
+
 </table>

@@ -6,10 +6,10 @@ namespace IntroASP.Models.ViewModels
     {
         //Esto es una clase para formularios, esto es para que el formulario siga una estructura
         [Required]
-        [Display(Name="Nombre")]
+        [Display(Name = "Nombre")]
         public string Name { get; set; }
         [Required]
-        [Display(Name="Marca")]
+        [Display(Name = "Marca")]
         public int BrandId { get; set; }
     }
 }

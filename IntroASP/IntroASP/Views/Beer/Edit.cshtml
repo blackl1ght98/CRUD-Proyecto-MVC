@@ -1,22 +1,26 @@
-﻿@model IntroASP.Models.Beer
-@using (Html.BeginForm())
-{
-    @Html.ValidationSummary(true)
-    <fieldset>
-        @Html.HiddenFor(model => model.BeerId) <!-- Esta linea es necesaria para saber que id de cerveza se esta editando -->
-        <div class="editor-label">
-            @Html.LabelFor(model => model.Name)
-        </div>
-        <div class="editor-field">
-            @Html.EditorFor(model => model.Name)
-            @Html.ValidationMessageFor(model => model.Name)
-        </div>
+﻿@model Beer
 
-        <p>
-            <input type="submit" value="Save" />
-        </p>
-    </fieldset>
-}
+
+
+
+<h2>Editar Cerveza</h2>
+
+<form asp-action="Edit" asp-controller="Beer" method="post">
+    <div class="form-group">
+        <input type="hidden" asp-for="BeerId" />
+        <label for="Name">Name</label>
+        <input type="text" class="form-control" id="Name" asp-for="Name" required> 
+    </div>
+    <div class="form-group">
+        <!--asp-for es para decir con que se va a relacionar-->
+
+        <label asp-for="BrandId" class="control-label"></label>
+      
+        <select asp-for="BrandId" class="form-select" asp-items="ViewBag.Brands"></select>
+        <span asp-validation-for="BrandId" class="text-danger"></span>
+    </div>
+    <button type="submit" value="Save" class="btn btn-primary mt-2">Editar</button>
+</form>
 
 
 <div>

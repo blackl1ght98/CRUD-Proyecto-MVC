@@ -19,6 +19,8 @@ public partial class PubContext : DbContext
 
     public virtual DbSet<Brand> Brands { get; set; }
 
+    public virtual DbSet<Usuario> Usuarios { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=DESKTOP-2TL9C3O\\SQLEXPRESS;Initial Catalog=Pub;Integrated Security=True;TrustServerCertificate=True");
@@ -48,6 +50,30 @@ public partial class PubContext : DbContext
 
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Usuario>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Usuarios__3214EC074D2819AB");
+
+            entity.Property(e => e.Direccion)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Email)
+                .HasMaxLength(500)
+                .IsUnicode(false);
+            entity.Property(e => e.EnlaceCambioPass).HasMaxLength(50);
+            entity.Property(e => e.FechaEnlaceCambioPass).HasColumnType("datetime");
+            entity.Property(e => e.FechaNacimiento).HasColumnType("date");
+            entity.Property(e => e.FechaRegistro)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.NombreCompleto).IsUnicode(false);
+            entity.Property(e => e.Password).HasMaxLength(500);
+            entity.Property(e => e.Rol).HasMaxLength(50);
+            entity.Property(e => e.Telefono)
+                .HasMaxLength(20)
                 .IsUnicode(false);
         });
 

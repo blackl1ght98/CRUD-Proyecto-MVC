@@ -54,16 +54,32 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/Home/Privacy.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/User/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/User/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/User/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/User/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/ViewRegisterEmail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmlld1JlZ2lzdGVyRW1haWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/guill/OneDrive/Escritorio/Glucontrol NO BORRAR/proyectos mvc/IntroASP/IntroASP/Views/_ViewImports.cshtml]

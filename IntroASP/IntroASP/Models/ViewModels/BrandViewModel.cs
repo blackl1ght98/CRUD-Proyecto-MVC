@@ -5,7 +5,7 @@ namespace IntroASP.Models.ViewModels
     public class BrandViewModel
     {
         [Required]
-        [Display(Name="Marca")]
+        [Display(Name = "Marca")]
         public int BrandId { get; set; }
         [Required]
         [Display(Name = "Nombre")]
