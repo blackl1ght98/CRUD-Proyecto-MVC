@@ -8,8 +8,7 @@ namespace IntroASP.Models.ViewModels
 
         [Required]
         public string Email { get; set; } = null!;
-        [Required]
-        public string Password { get; set; } = null!;
+     
         [Required]
         public string NombreCompleto { get; set; } = null!;
 

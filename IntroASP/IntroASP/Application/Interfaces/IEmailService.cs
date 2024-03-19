@@ -6,5 +6,6 @@ namespace IntroASP.Application.Interfaces
     {
         Task SendEmailAsyncRegister(DTOEmail userData);
         Task SendEmailAsyncChangePassword(DTOEmail userData);
+        Task SendTempPassword(DTOEmail userData);
     }
 }

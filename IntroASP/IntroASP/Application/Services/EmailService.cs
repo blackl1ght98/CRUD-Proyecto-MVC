@@ -13,6 +13,7 @@ using MimeKit;
 using IntroASP.Models;
 using Microsoft.EntityFrameworkCore;
 using MailKit.Net.Smtp;
+using System.Text;
 
 namespace IntroASP.Application.Services
 {
@@ -25,11 +26,12 @@ namespace IntroASP.Application.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ICompositeViewEngine _viewEngine;
         private readonly ITempDataProvider _tempDataProvider;
+        private readonly HashService _hashService;
 
 
         public EmailService(IConfiguration config, IHttpContextAccessor httpContextAccessor,
             INewStringGuid newStringGuid, PubContext context, ITempDataProvider tempDataProvider,
-            ICompositeViewEngine viewEngine, IServiceProvider serviceProvider)
+            ICompositeViewEngine viewEngine, IServiceProvider serviceProvider, HashService hashService)
         {
             _config = config;
             _httpContextAccessor = httpContextAccessor;
@@ -38,6 +40,7 @@ namespace IntroASP.Application.Services
             _tempDataProvider = tempDataProvider;
             _viewEngine = viewEngine;
             _serviceProvider = serviceProvider;
+            _hashService = hashService;
         }
 
 
@@ -96,8 +99,7 @@ namespace IntroASP.Application.Services
             textoEnlace = textoEnlace.Replace("=", "").Replace("+", "").Replace("/", "").Replace("?", "").Replace("&", "").Replace("!", "").Replace("¡", "");
             usuarioDB.EnlaceCambioPass = textoEnlace;
             usuarioDB.FechaEnlaceCambioPass = fecha;
-            string urlToRedirect = $"http://localhost:4200/recover-pass/{textoEnlace}";
-            string encodedUrlToRedirect = System.Net.WebUtility.UrlEncode(urlToRedirect);
+           
 
             var model = new DTOEmail
             {
@@ -105,7 +107,7 @@ namespace IntroASP.Application.Services
 
                 //RecoveryLink = $"http://localhost:4200/shared/recover-pass/{textoEnlace}",
                 //RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/shared/recover-pass/{textoEnlace}?redirect=true",
-                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/recover-pass/{textoEnlace}?redirect=true&url={encodedUrlToRedirect}"
+                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ConfirmRegistration/{textoEnlace}?redirect=true"
             };
 
             await _newStringGuid.SaveNewStringGuid(usuarioDB);
@@ -133,6 +135,55 @@ namespace IntroASP.Application.Services
             await smtp.DisconnectAsync(true);
 
         }
+        //---------------------------------------------------------------------------------------------------
+        public async Task SendTempPassword(DTOEmail userData)
+        {
+
+            var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == userData.ToEmail);
+
+            DateTime fecha = DateTime.Now.AddHours(+1);
+            Guid miGuid = Guid.NewGuid();
+            string textoEnlace = Convert.ToBase64String(miGuid.ToByteArray());
+            textoEnlace = textoEnlace.Replace("=", "").Replace("+", "").Replace("/", "").Replace("?", "").Replace("&", "").Replace("!", "").Replace("¡", "");
+            usuarioDB.EnlaceCambioPass = textoEnlace;
+            usuarioDB.FechaEnlaceCambioPass = fecha;
+         
+
+            var model = new DTOEmail
+            {
+                //RecoveryLink = $"http://localhost:4200/recover-pass/{usuarioDB.EnlaceCambioPass}",
+
+                //RecoveryLink = $"http://localhost:4200/shared/recover-pass/{textoEnlace}",
+                //RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/shared/recover-pass/{textoEnlace}?redirect=true",
+                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ResetPassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true"
+            };
+
+            await _newStringGuid.SaveNewStringGuid(usuarioDB);
+
+            var ruta = await RenderViewToStringAsync("RecoverPassword", model);
+
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(_config.GetSection("Email:UserName").Value));
+            email.To.Add(MailboxAddress.Parse(userData.ToEmail));
+            email.Subject = "Recuperar contraseña";
+            email.Body = new TextPart(TextFormat.Html)
+            {
+                Text = await RenderViewToStringAsync("RecoverPassword", model)
+            };
+
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(
+                _config.GetSection("Email:Host").Value,
+                Convert.ToInt32(_config.GetSection("Email:Port").Value),
+                SecureSocketOptions.StartTls
+            );
+
+            await smtp.AuthenticateAsync(_config.GetSection("Email:UserName").Value, _config.GetSection("Email:PassWord").Value);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
+
+        }
+
 
 
 

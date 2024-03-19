@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
+using System.Text;
 
 namespace IntroASP.Infrastructure.Controllers
 {
@@ -36,11 +37,7 @@ namespace IntroASP.Infrastructure.Controllers
             var usuarios = _context.Usuarios.Include(x=>x.IdRolNavigation).ToList();
             return View(usuarios);
         }
-        //public IActionResult UpdateRole()
-        //{
-        //    ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
-        //    return View(_context.Usuarios.ToList());
-        //}
+    
 
 
         [HttpPost]
@@ -144,7 +141,7 @@ namespace IntroASP.Infrastructure.Controllers
             {
                 //Se busca al usuario por el email
                 //Se busca al usuario por el email
-                var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
+                var user = await _context.Usuarios.Include(x => x.IdRolNavigation).FirstOrDefaultAsync(u => u.Email == model.Email);
 
                 if (user != null)
                 {
@@ -232,7 +229,6 @@ namespace IntroASP.Infrastructure.Controllers
 
                 // Mapea los datos del ViewModel a la entidad
                 user.NombreCompleto = userVM.NombreCompleto;
-                //user.Email = userVM.Email;
                 user.FechaNacimiento=userVM.FechaNacimiento;
                 user.Telefono = userVM.Telefono;
                 user.Direccion = userVM.Direccion;
@@ -255,20 +251,7 @@ namespace IntroASP.Infrastructure.Controllers
                 {
                     user.Email = userVM.Email;
                 }
-                if (!string.IsNullOrEmpty(userVM.Password))
-                {
-                    var resultadoHash = _hashService.Hash(userVM.Password, user.Salt);
-                    //Si la contraseña que se intenta cambiar pones la misma que hay en base de datos
-                    //se le muestra al usuario el mensaje que hay en Unauthorized
-                    if (user.Password != resultadoHash.Hash)
-                    {
-                        await _changePassService.ChangePassId(user, userVM.Password);
-                    }
-                    else
-                    {
-                        user.Password= resultadoHash.Hash;
-                    }
-                }
+             
 
 
                 try
@@ -294,9 +277,13 @@ namespace IntroASP.Infrastructure.Controllers
 
         private bool UserExists(int Id)
         {
-            Console.WriteLine("BeerId: " + Id);  // Agrega esta línea para depurar
+          
             return _context.Usuarios.Any(e => e.Id == Id);
         }
+      
+
+
+
         public async Task<IActionResult> Delete(int id)
         {
             //Si el id es nulo da un error 404

@@ -33,5 +33,7 @@ public partial class Usuario
 
     public DateTime? FechaRegistro { get; set; }
 
+    public bool? MustChangePassword { get; set; }
+
     public virtual Role IdRolNavigation { get; set; } = null!;
 }
