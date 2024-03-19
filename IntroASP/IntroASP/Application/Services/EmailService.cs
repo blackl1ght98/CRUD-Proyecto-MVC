@@ -136,57 +136,61 @@ namespace IntroASP.Application.Services
 
         }
         //---------------------------------------------------------------------------------------------------
-        public async Task SendTempPassword(DTOEmail userData)
+        public async Task SendEmailAsyncResetPassword(DTOEmail userDataResetPassword)
         {
+            var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == userDataResetPassword.ToEmail);
 
-            var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == userData.ToEmail);
+            // Generar una contraseña temporal
+            var contrasenaTemporal = GenerarContrasenaTemporal();
 
-            DateTime fecha = DateTime.Now.AddHours(+1);
-            Guid miGuid = Guid.NewGuid();
-            string textoEnlace = Convert.ToBase64String(miGuid.ToByteArray());
-            textoEnlace = textoEnlace.Replace("=", "").Replace("+", "").Replace("/", "").Replace("?", "").Replace("&", "").Replace("!", "").Replace("¡", "");
-            usuarioDB.EnlaceCambioPass = textoEnlace;
-            usuarioDB.FechaEnlaceCambioPass = fecha;
-         
+            // Hashear la contraseña temporal y guardarla en la base de datos
+            var resultadoHash = _hashService.Hash(contrasenaTemporal);
+            usuarioDB.Password = resultadoHash.Hash;
+            usuarioDB.Salt = resultadoHash.Salt;
 
+            // Guardar los cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            // Crear el modelo para la vista del correo electrónico
             var model = new DTOEmail
             {
-                //RecoveryLink = $"http://localhost:4200/recover-pass/{usuarioDB.EnlaceCambioPass}",
-
-                //RecoveryLink = $"http://localhost:4200/shared/recover-pass/{textoEnlace}",
-                //RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/shared/recover-pass/{textoEnlace}?redirect=true",
-                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ResetPassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true"
+                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ResetPassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true",
+                TemporaryPassword = contrasenaTemporal
             };
 
-            await _newStringGuid.SaveNewStringGuid(usuarioDB);
+            // Renderizar la vista del correo electrónico
+            var ruta = await RenderViewToStringAsync("ViewResetPasswordEmail", model);
 
-            var ruta = await RenderViewToStringAsync("RecoverPassword", model);
-
+            // Crear el correo electrónico
             var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(_config.GetSection("Email:UserName").Value));
-            email.To.Add(MailboxAddress.Parse(userData.ToEmail));
-            email.Subject = "Recuperar contraseña";
+            email.To.Add(MailboxAddress.Parse(userDataResetPassword.ToEmail));
+            email.Subject = "Recuperar Contraseña";
             email.Body = new TextPart(TextFormat.Html)
             {
-                Text = await RenderViewToStringAsync("RecoverPassword", model)
+                Text = await RenderViewToStringAsync("ViewResetPasswordEmail", model)
             };
 
+            // Enviar el correo electrónico
             using var smtp = new SmtpClient();
             await smtp.ConnectAsync(
                 _config.GetSection("Email:Host").Value,
                 Convert.ToInt32(_config.GetSection("Email:Port").Value),
                 SecureSocketOptions.StartTls
             );
-
             await smtp.AuthenticateAsync(_config.GetSection("Email:UserName").Value, _config.GetSection("Email:PassWord").Value);
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
-
         }
 
-
-
-
+        private string GenerarContrasenaTemporal()
+        {
+            var length = 8;
+            var random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+           .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
 
         private async Task<string> RenderViewToStringAsync(string viewName, object model)
         {
