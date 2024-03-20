@@ -147,14 +147,17 @@ namespace IntroASP.Application.Services
             var resultadoHash = _hashService.Hash(contrasenaTemporal);
             usuarioDB.Password = resultadoHash.Hash;
             usuarioDB.Salt = resultadoHash.Salt;
-
             // Guardar los cambios en la base de datos
             await _context.SaveChangesAsync();
-
+            var fechaExpiracion = DateTime.UtcNow.AddHours(24); // El enlace expira después de 24 horas
+            // Guardar la fecha de vencimiento en la base de datos
+            usuarioDB.FechaEnlaceCambioPass = fechaExpiracion;
+            // Guardar los cambios en la base de datos
+            await _context.SaveChangesAsync();
             // Crear el modelo para la vista del correo electrónico
             var model = new DTOEmail
             {
-                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ResetPassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true",
+                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/RestorePassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true",
                 TemporaryPassword = contrasenaTemporal
             };
 

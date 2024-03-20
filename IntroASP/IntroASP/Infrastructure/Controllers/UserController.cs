@@ -21,14 +21,16 @@ namespace IntroASP.Infrastructure.Controllers
         private readonly HashService _hashService;
         private readonly IConfirmEmailService _confirmEmailService;
         private readonly IChangePassService _changePassService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public UserController(PubContext context, IEmailService emailService, HashService hashService, IConfirmEmailService confirmEmailService, IChangePassService changePassService)
+        public UserController(PubContext context, IEmailService emailService, HashService hashService, IConfirmEmailService confirmEmailService, IChangePassService changePassService, IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _emailService = emailService;
             _hashService = hashService;
             _confirmEmailService = confirmEmailService;
             _changePassService = changePassService;
+            _contextAccessor = contextAccessor;
         }
 
         public IActionResult Index()
@@ -320,7 +322,77 @@ namespace IntroASP.Infrastructure.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        //Este metodo toma el email por ruta y ademas envia un email al usuario con lo que tiene que hacer para resetear la contraseña
+        [Route("UserController/ResetPassword/{email}")]
+        public async Task<IActionResult> ResetPassword(string email)
+        {
+            var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == email);
+            // Generar una contraseña temporal
+            await _emailService.SendEmailAsyncResetPassword(new DTOEmail
+            {
+                ToEmail = email
+            });
+            return View(usuarioDB);
+        }
+        //De ese email que se ha enviado del enlace tomamos el id de usuario y el token que no es token lo que genera es un
+        //identificador unico
+        [Route("UserController/RestorePassword/{UserId}/{Token}")]
+        public async Task<IActionResult> RestorePassword(DTORestorePass cambio)
+        {
+            var usuarioDB = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == cambio.UserId);
+            if (usuarioDB.Email == null)
+            {
+                return BadRequest("Email no encontrado");
+            }
 
-     
+            if (usuarioDB.EnlaceCambioPass != cambio.Token)
+            {
+                return BadRequest("Token no valido");
+            }
+
+            // Crear un nuevo objeto DTORestorePass y establecer las propiedades apropiadas
+            var restorePass = new DTORestorePass
+            {
+                UserId = usuarioDB.Id,
+                Token = usuarioDB.EnlaceCambioPass,
+                // Puedes establecer otras propiedades aquí si es necesario
+            };
+
+            // Pasar el objeto DTORestorePass a la vista
+            return View(restorePass);
+        }
+        //En la vista para restaurar la contraseña llamamos a este metodo para que la contraseña sea restaurada
+        [HttpPost]
+        public async Task<IActionResult> RestorePasswordUser(DTORestorePass cambio)
+        {
+            var usuarioDB = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == cambio.UserId);
+            if (usuarioDB == null)
+            {
+                return BadRequest("Usuario no encontrado");
+            }
+
+           
+            // Comprobar si la contraseña es nula
+            if (string.IsNullOrEmpty(cambio.Password))
+            {
+                return BadRequest("La contraseña no puede estar vacía");
+            }
+
+            var resultadoHash = _hashService.Hash(cambio.Password);
+            // Actualizar la contraseña del usuario
+            usuarioDB.Password = resultadoHash.Hash;
+            usuarioDB.Salt = resultadoHash.Salt;
+
+            // Guardar los cambios en la base de datos
+            _context.Usuarios.Update(usuarioDB);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "User");
+
+        }
+
+
+
+
     }
 }

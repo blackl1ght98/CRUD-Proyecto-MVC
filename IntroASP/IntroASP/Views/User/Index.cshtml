@@ -50,7 +50,7 @@
                                 <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-warning">Update</a>
                             </td>
                             <td>
-                                <a asp-action="ResetPassword" asp-route-id="@user.Id" class="btn btn-warning">Pass</a>
+                                <a asp-action="ResetPassword" asp-route-email="@user.Email" class="btn btn-warning">Pass</a>
                             </td>
                         </tr>
                     }
