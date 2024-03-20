@@ -85,6 +85,7 @@ public partial class PubContext : DbContext
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.TemporaryPassword).IsUnicode(false);
 
             entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.Usuarios)
                 .HasForeignKey(d => d.IdRol)

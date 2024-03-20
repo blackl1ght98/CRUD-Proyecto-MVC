@@ -57,9 +57,8 @@ namespace IntroASP.Application.Services
 
             var model = new DTOEmail
             {
-                //RecoveryLink = $"http://localhost:4200/login/{usuarioDB.EnlaceCambioPass}",
-                //RecoveryLink = $"http://localhost:4200/login/confirm-email/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}",
-                //RecoveryLink = $"http://localhost:4200/shared/redireccion/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}",
+                
+                //Cuando el usuario hace clic en el enlace que se le envia al correo electroni va al enspoint de confirmacion de correo electronico, en dicho endpoint los parametros llegan por ruta
                 RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ConfirmRegistration/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true",
             };
 
@@ -88,53 +87,6 @@ namespace IntroASP.Application.Services
             await smtp.DisconnectAsync(true);
         }
 
-        public async Task SendEmailAsyncChangePassword(DTOEmail userData)
-        {
-
-            var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == userData.ToEmail);
-
-            DateTime fecha = DateTime.Now.AddHours(+1);
-            Guid miGuid = Guid.NewGuid();
-            string textoEnlace = Convert.ToBase64String(miGuid.ToByteArray());
-            textoEnlace = textoEnlace.Replace("=", "").Replace("+", "").Replace("/", "").Replace("?", "").Replace("&", "").Replace("!", "").Replace("¡", "");
-            usuarioDB.EnlaceCambioPass = textoEnlace;
-            usuarioDB.FechaEnlaceCambioPass = fecha;
-           
-
-            var model = new DTOEmail
-            {
-                //RecoveryLink = $"http://localhost:4200/recover-pass/{usuarioDB.EnlaceCambioPass}",
-
-                //RecoveryLink = $"http://localhost:4200/shared/recover-pass/{textoEnlace}",
-                //RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/shared/recover-pass/{textoEnlace}?redirect=true",
-                RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/ConfirmRegistration/{textoEnlace}?redirect=true"
-            };
-
-            await _newStringGuid.SaveNewStringGuid(usuarioDB);
-
-            var ruta = await RenderViewToStringAsync("RecoverPassword", model);
-
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse(_config.GetSection("Email:UserName").Value));
-            email.To.Add(MailboxAddress.Parse(userData.ToEmail));
-            email.Subject = "Recuperar contraseña";
-            email.Body = new TextPart(TextFormat.Html)
-            {
-                Text = await RenderViewToStringAsync("RecoverPassword", model)
-            };
-
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(
-                _config.GetSection("Email:Host").Value,
-                Convert.ToInt32(_config.GetSection("Email:Port").Value),
-                SecureSocketOptions.StartTls
-            );
-
-            await smtp.AuthenticateAsync(_config.GetSection("Email:UserName").Value, _config.GetSection("Email:PassWord").Value);
-            await smtp.SendAsync(email);
-            await smtp.DisconnectAsync(true);
-
-        }
         //---------------------------------------------------------------------------------------------------
         public async Task SendEmailAsyncResetPassword(DTOEmail userDataResetPassword)
         {
@@ -145,7 +97,7 @@ namespace IntroASP.Application.Services
 
             // Hashear la contraseña temporal y guardarla en la base de datos
             var resultadoHash = _hashService.Hash(contrasenaTemporal);
-            usuarioDB.Password = resultadoHash.Hash;
+            usuarioDB.TemporaryPassword = resultadoHash.Hash;
             usuarioDB.Salt = resultadoHash.Salt;
             // Guardar los cambios en la base de datos
             await _context.SaveChangesAsync();
@@ -157,6 +109,7 @@ namespace IntroASP.Application.Services
             // Crear el modelo para la vista del correo electrónico
             var model = new DTOEmail
             {
+                //Cuando el usuario hace clic en el enlace que se le envia al correo electronico es dirigido la endpoint de restaurar la contraseña(RestorePassword)
                 RecoveryLink = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}/UserController/RestorePassword/{usuarioDB.Id}/{usuarioDB.EnlaceCambioPass}?redirect=true",
                 TemporaryPassword = contrasenaTemporal
             };
@@ -186,14 +139,24 @@ namespace IntroASP.Application.Services
             await smtp.DisconnectAsync(true);
         }
 
+        //private string GenerarContrasenaTemporal()
+        //{
+        //    var length = 8;
+        //    var random = new Random();
+        //    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        //    return new string(Enumerable.Repeat(chars, length)
+        //   .Select(s => s[random.Next(s.Length)]).ToArray());
+        //}
         private string GenerarContrasenaTemporal()
         {
-            var length = 8;
+            var length = 12; // Aumenta la longitud de la contraseña
             var random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            // Incluye caracteres especiales además de letras y números
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
             return new string(Enumerable.Repeat(chars, length)
            .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
 
         private async Task<string> RenderViewToStringAsync(string viewName, object model)
         {

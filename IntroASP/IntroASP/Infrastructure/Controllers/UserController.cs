@@ -32,7 +32,7 @@ namespace IntroASP.Infrastructure.Controllers
             _changePassService = changePassService;
             _contextAccessor = contextAccessor;
         }
-
+        //Vista principal del controlador donde alvergara las funciones de este controlador
         public IActionResult Index()
         {
             ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
@@ -106,6 +106,7 @@ namespace IntroASP.Infrastructure.Controllers
             }
             return View(model);
         }
+        //Con esto se consigue manejar datos de la ruta
         [Route("UserController/ConfirmRegistration/{UserId}/{Token}")]
         public async Task<IActionResult> ConfirmRegistration(DTOConfirmRegistration confirmar)
         {
@@ -137,26 +138,28 @@ namespace IntroASP.Infrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            //ModelState.IsValid comprueba si el modelo es valido
             if (ModelState.IsValid)
-
             {
-                //Se busca al usuario por el email
-                //Se busca al usuario por el email
                 var user = await _context.Usuarios.Include(x => x.IdRolNavigation).FirstOrDefaultAsync(u => u.Email == model.Email);
 
                 if (user != null)
                 {
-                    //Se llama al servicio de hash para comprobar la contraseña que se ha escrito
-                    var resultadoHash = _hashService.Hash(model.Password, user.Salt); // Usa la contraseña ingresada por el usuario
+                    // Comprobar si el correo electrónico ha sido confirmado
+                    if (!user.ConfirmacionEmail)
+                    {
+                        ModelState.AddModelError("", "Por favor, confirma tu correo electrónico antes de iniciar sesión.");
+                        return View(model);
+                    }
 
-                    if (user.Password == resultadoHash.Hash) // Compara el hash almacenado con el hash generado
+                    var resultadoHash = _hashService.Hash(model.Password, user.Salt);
+
+                    if (user.Password == resultadoHash.Hash)
                     {
                         var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, user.Email),
-                            new Claim(ClaimTypes.Role, user.IdRolNavigation.Nombre)
-                        };
+                {
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Role, user.IdRolNavigation.Nombre)
+                };
 
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                         var principal = new ClaimsPrincipal(identity);
@@ -167,30 +170,23 @@ namespace IntroASP.Infrastructure.Controllers
                     }
                     else
                     {
-                        //La sintaxis de un mensaje de error personalizado es ModelState.AddModelError("","") que
-                        //lo primero es la clave que lo que se refiere al campo que afecta dicho error y el segundo
-                        //valor es el mensaje de error si el primer valor se pone "" esto se llama clave vacia
-                        //para que una clave vacia se muestre es imprescindible poner en la vista  @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
                         ModelState.AddModelError("", "El email y/o la contraseña son incorrectos.");
-                        //ModelState.AddModelError("Email", "El email es incorrecto.");
-                        //ModelState.AddModelError("Password", "El password es incorrecto.");
                         return View(model);
                     }
                 }
 
                 return View(model);
-
             }
 
             return View(model);
         }
-      
+
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
+        //Con esto se muestra la vista para editar el usuario
         public async Task<ActionResult> Edit(int id)
         {
             // Obtienes el usuario de la base de datos
@@ -285,13 +281,13 @@ namespace IntroASP.Infrastructure.Controllers
       
 
 
-
+        //Vista que se muestra al eliminar el usuario
         public async Task<IActionResult> Delete(int id)
         {
             //Si el id es nulo da un error 404
             if (id == null)
             {
-                return NotFound("Cerveza no encontrada");
+                return NotFound("Id usuario no encontrado");
             }
             //Consulta a base de datos
             var user = await _context.Usuarios
@@ -300,7 +296,7 @@ namespace IntroASP.Infrastructure.Controllers
             //Si no hay cervezas muestra el error 404
             if (user == null)
             {
-                return NotFound("Cervezas no encontradas");
+                return NotFound("Usuario no encontrado");
             }
             //Llegados ha este punto hay cervezas por lo tanto se muestran las cervezas
             return View(user);
@@ -309,8 +305,9 @@ namespace IntroASP.Infrastructure.Controllers
 
         [HttpPost, ActionName("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
-        //Para que detecte la id de la cerveza es necesario poner el mismo nombre que se ponga en la vista en la
-        //parte del asp-for del formulario tenemos BeerId por lo tanto aqui tambien hay que ponerlo
+        //Para que detecte la id del usuario es necesario poner el mismo nombre que se ponga en la vista en la
+        //parte del asp-for del formulario tenemos Id por lo tanto aqui tambien hay que ponerlo
+        //El asp-for si tu ahi le pasar Id lo que va a ir a buscar es algo que sea Id si se pone en minuscula no lo encuentra
         public async Task<IActionResult> DeleteConfirmed(int Id)
         {
             var user = await _context.Usuarios.FirstOrDefaultAsync(m => m.Id == Id);
@@ -324,6 +321,7 @@ namespace IntroASP.Infrastructure.Controllers
         }
         //Este metodo toma el email por ruta y ademas envia un email al usuario con lo que tiene que hacer para resetear la contraseña
         [Route("UserController/ResetPassword/{email}")]
+        //Esto le muestra una vista al administrador
         public async Task<IActionResult> ResetPassword(string email)
         {
             var usuarioDB = await _context.Usuarios.AsTracking().FirstOrDefaultAsync(x => x.Email == email);
@@ -362,6 +360,7 @@ namespace IntroASP.Infrastructure.Controllers
             return View(restorePass);
         }
         //En la vista para restaurar la contraseña llamamos a este metodo para que la contraseña sea restaurada
+      
         [HttpPost]
         public async Task<IActionResult> RestorePasswordUser(DTORestorePass cambio)
         {
@@ -370,14 +369,21 @@ namespace IntroASP.Infrastructure.Controllers
             {
                 return BadRequest("Usuario no encontrado");
             }
-
-           
             // Comprobar si la contraseña es nula
             if (string.IsNullOrEmpty(cambio.Password))
             {
                 return BadRequest("La contraseña no puede estar vacía");
             }
-
+            // Comprobar si la contraseña temporal es válida
+            var resultadoHashTemp = _hashService.Hash(cambio.TemporaryPassword);
+            usuarioDB.TemporaryPassword = resultadoHashTemp.Hash;
+            usuarioDB.Salt = resultadoHashTemp.Salt;
+            if (usuarioDB.TemporaryPassword != resultadoHashTemp.Hash || usuarioDB.Salt != resultadoHashTemp.Salt)
+            {
+                return BadRequest("La contraseña temporal no es válida");
+            }
+            _context.Usuarios.Update(usuarioDB);
+            await _context.SaveChangesAsync();
             var resultadoHash = _hashService.Hash(cambio.Password);
             // Actualizar la contraseña del usuario
             usuarioDB.Password = resultadoHash.Hash;
@@ -388,7 +394,6 @@ namespace IntroASP.Infrastructure.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "User");
-
         }
 
 
