@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IntroASP.Infrastructure.Controllers
 {
-    [Authorize(Roles ="usuario")]
+    [Authorize(Roles ="usuario, administrador")]
     public class BrandController : Controller
     {
         //Al igual que en un proyecto tipo web api se crea un controlador vacio aqui se crea igual

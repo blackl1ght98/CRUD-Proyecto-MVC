@@ -2,7 +2,6 @@
 using IntroASP.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using IntroASP.Application.Interfaces;
 using IntroASP.Application.Services;
 using IntroASP.Application.DTOs;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,6 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using System.Text;
+using IntroASP.Interfaces.Application;
 
 namespace IntroASP.Infrastructure.Controllers
 {
@@ -229,20 +229,21 @@ namespace IntroASP.Infrastructure.Controllers
 
 
         //Cuando quieres editar algo de tu modelo de base de datos pero no quieres que se puedan editar determinados campos
-        //lo que se realiza es una vista del modelo para especificar que campos se quieren cambiar 
-       
+        //lo que se realiza es una vista del modelo para especificar que campos se quieren cambiar (UsuarioEditViewModel)
+
 
         [HttpPost]
         public async Task<ActionResult> Edit(UsuarioEditViewModel userVM)
         {
+            //Si el modelo es valido:
             if (ModelState.IsValid)
             {
-                // Obtén la entidad Usuario correspondiente de la base de datos
+                // Obtiene la id del usuario a editar
                 var user = await _context.Usuarios.FindAsync(userVM.Id);
 
                 if (user == null)
                 {
-                    return NotFound();
+                    return NotFound("Usuario no encontrado");
                 }
 
                 // Mapea los datos del ViewModel a la entidad
@@ -255,11 +256,13 @@ namespace IntroASP.Infrastructure.Controllers
                 //Esto ocurre cuando el usuario cambia de email 
                 if (user != null && user.Email != userVM.Email)
                 {
-
+                    //La confirmacion de email se le cambia a false
                     user.ConfirmacionEmail = false;
+                    //El nuevo email se asigna a base de datos
                     user.Email = userVM.Email;
                     _context.Usuarios.Update(user);
                     await _context.SaveChangesAsync();
+                    //Se envia un emain para confirmar el nuevo correo
                     await _emailService.SendEmailAsyncRegister(new DTOEmail
                     {
                         ToEmail = userVM.Email
@@ -278,6 +281,16 @@ namespace IntroASP.Infrastructure.Controllers
                     //Marca la entidad Usuarios como modificada
                     /*El método Entry en el contexto de Entity Framework Core se utiliza para obtener un objeto 
                      * que puede usarse para configurar y realizar acciones en una entidad que está siendo rastreada por el contexto.*/
+                    /*
+
+    Update(user): Este método marca la entidad y todas sus propiedades como modificadas. Esto significa que cuando llamas a SaveChangesAsync(), 
+                    Entity Framework generará un comando SQL UPDATE que actualizará todas las columnas de la entidad en la base de datos, 
+                    independientemente de si cambiaron o no.
+
+    Entry(user).State = EntityState.Modified: Este método marca la entidad como modificada, pero no todas las propiedades. Cuando llamas a 
+                    SaveChangesAsync(), Entity Framework generará un comando SQL UPDATE que sólo actualizará las columnas de la entidad que 
+                    realmente cambiaron.
+*/
                     _context.Entry(user).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                 }
@@ -319,15 +332,9 @@ namespace IntroASP.Infrastructure.Controllers
         [Authorize(Roles = "administrador")]
         public async Task<IActionResult> Delete(int id)
         {
-            //Si el id es nulo da un error 404
-            if (id == null)
-            {
-                return NotFound("Id usuario no encontrado");
-            }
-            //Consulta a base de datos
-            var user = await _context.Usuarios
-
-    .FirstOrDefaultAsync(m => m.Id == id);
+        
+            //Consulta a base de datos en base a la id del usuario
+            var user = await _context.Usuarios.FirstOrDefaultAsync(m => m.Id == id);
             //Si no hay cervezas muestra el error 404
             if (user == null)
             {

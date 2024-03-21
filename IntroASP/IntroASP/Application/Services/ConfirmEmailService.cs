@@ -1,5 +1,5 @@
 ﻿using IntroASP.Application.DTOs;
-using IntroASP.Application.Interfaces;
+using IntroASP.Interfaces.Application;
 using IntroASP.Models;
 using Microsoft.EntityFrameworkCore;
 

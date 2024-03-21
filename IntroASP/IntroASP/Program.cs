@@ -1,7 +1,7 @@
-using IntroASP.Application.Interfaces;
 using IntroASP.Application.Services;
-using IntroASP.Infrastructure.Interfaces;
 using IntroASP.Infrastructure.Repositories;
+using IntroASP.Interfaces.Application;
+using IntroASP.Interfaces.Infrastructure;
 using IntroASP.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;

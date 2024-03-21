@@ -1,4 +1,4 @@
-﻿using IntroASP.Infrastructure.Interfaces;
+﻿using IntroASP.Interfaces.Infrastructure;
 using IntroASP.Models;
 
 namespace IntroASP.Infrastructure.Repositories

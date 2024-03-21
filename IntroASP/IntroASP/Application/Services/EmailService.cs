@@ -1,6 +1,4 @@
 ﻿using IntroASP.Application.DTOs;
-using IntroASP.Application.Interfaces;
-using IntroASP.Infrastructure.Interfaces;
 using MailKit.Security;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,6 +12,8 @@ using IntroASP.Models;
 using Microsoft.EntityFrameworkCore;
 using MailKit.Net.Smtp;
 using System.Text;
+using IntroASP.Interfaces.Application;
+using IntroASP.Interfaces.Infrastructure;
 
 namespace IntroASP.Application.Services
 {

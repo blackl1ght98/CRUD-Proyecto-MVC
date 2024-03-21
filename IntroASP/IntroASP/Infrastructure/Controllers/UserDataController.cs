@@ -1,6 +1,6 @@
 ﻿using IntroASP.Application.DTOs;
-using IntroASP.Application.Interfaces;
 using IntroASP.Application.Services;
+using IntroASP.Interfaces.Application;
 using IntroASP.Models;
 using IntroASP.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;

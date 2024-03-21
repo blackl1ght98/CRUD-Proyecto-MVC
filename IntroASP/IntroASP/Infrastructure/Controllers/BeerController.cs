@@ -11,7 +11,7 @@ using static Org.BouncyCastle.Asn1.Cmp.Challenge;
 
 namespace IntroASP.Infrastructure.Controllers
 {
-    [Authorize(Roles ="usuario")]
+    [Authorize(Roles ="usuario, administrador")]
     public class BeerController : Controller
     {
         //Inyeccion de dependencias
