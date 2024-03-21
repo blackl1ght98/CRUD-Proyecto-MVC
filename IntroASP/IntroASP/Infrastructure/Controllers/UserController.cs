@@ -33,15 +33,22 @@ namespace IntroASP.Infrastructure.Controllers
             _contextAccessor = contextAccessor;
         }
         //Vista principal del controlador donde alvergara las funciones de este controlador
+        //Aqui hemos usado la vista principal para traer todos los datos del usuario
+
         public IActionResult Index()
         {
+            //Obtiene los datos de los roles, recordemos que selectList se le pasan varios  elementos 
+            //primero la funente de informacion
+            //segundo el identificador
+            //tercero lo que ve el usuario
             ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
             var usuarios = _context.Usuarios.Include(x=>x.IdRolNavigation).ToList();
             return View(usuarios);
         }
-    
+        //Como en la vista principal se han obtenido todos los datos de procede a actualizar el rol
+        //UpdateRole no tiene ninguna vista independiente porque ya se llama en la vista principal
 
-
+        [Authorize(Roles = "administrador")]
         [HttpPost]
         public IActionResult UpdateRole(int id, int newRole)
         {
@@ -50,6 +57,7 @@ namespace IntroASP.Infrastructure.Controllers
             {
                 return NotFound();
             }
+            //crea el desplegable
             ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
 
             user.IdRol = newRole;
@@ -57,14 +65,19 @@ namespace IntroASP.Infrastructure.Controllers
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
+        //Creacion de un usuario. Esto reedirige a una vista que contiene lo que ve el admin cuando crea un usuario
+        [Authorize(Roles = "administrador")]
         public IActionResult Create()
         {
+            //Sirve para obtener los datos del desplegable
             ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
 
             return View();
         }
+      
 
         [HttpPost]
+        //Sirve para que no se altere la informacion del formulario
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model)
         {
@@ -94,6 +107,7 @@ namespace IntroASP.Infrastructure.Controllers
                     Direccion = model.Direccion,
                     FechaRegistro = DateTime.Now
                 };
+                //Sirve para crear el desplegable
                 ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
 
                 _context.Add(user);
@@ -106,7 +120,9 @@ namespace IntroASP.Infrastructure.Controllers
             }
             return View(model);
         }
-        //Con esto se consigue manejar datos de la ruta
+        //Con esto se consigue manejar datos de la ruta, este endpoint se llama en el email service cuando se le manda el correo electronico
+        //al usuario y el usuario hace clic en el enlace este metodo es llamado
+        [AllowAnonymous]
         [Route("UserController/ConfirmRegistration/{UserId}/{Token}")]
         public async Task<IActionResult> ConfirmRegistration(DTOConfirmRegistration confirmar)
         {
@@ -133,7 +149,7 @@ namespace IntroASP.Infrastructure.Controllers
         {
             return View();
         }
-
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -156,10 +172,11 @@ namespace IntroASP.Infrastructure.Controllers
                     if (user.Password == resultadoHash.Hash)
                     {
                         var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.Email),
-                    new Claim(ClaimTypes.Role, user.IdRolNavigation.Nombre)
-                };
+                        {
+                            new Claim(ClaimTypes.Name, user.Email),
+                            new Claim(ClaimTypes.Role, user.IdRolNavigation.Nombre),
+                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),//Maneja que usuario esta logueado actualmente
+                        };
 
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                         var principal = new ClaimsPrincipal(identity);
@@ -180,13 +197,14 @@ namespace IntroASP.Infrastructure.Controllers
 
             return View(model);
         }
-
+        [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
         //Con esto se muestra la vista para editar el usuario
+        [Authorize(Roles = "administrador")]
         public async Task<ActionResult> Edit(int id)
         {
             // Obtienes el usuario de la base de datos
@@ -212,6 +230,8 @@ namespace IntroASP.Infrastructure.Controllers
 
         //Cuando quieres editar algo de tu modelo de base de datos pero no quieres que se puedan editar determinados campos
         //lo que se realiza es una vista del modelo para especificar que campos se quieren cambiar 
+       
+
         [HttpPost]
         public async Task<ActionResult> Edit(UsuarioEditViewModel userVM)
         {
@@ -232,7 +252,7 @@ namespace IntroASP.Infrastructure.Controllers
                 user.Direccion = userVM.Direccion;
              
 
-
+                //Esto ocurre cuando el usuario cambia de email 
                 if (user != null && user.Email != userVM.Email)
                 {
 
@@ -247,6 +267,7 @@ namespace IntroASP.Infrastructure.Controllers
                 }
                 else
                 {
+                    //Si el usuario no cambia el email se queda igual
                     user.Email = userVM.Email;
                 }
              
@@ -254,9 +275,17 @@ namespace IntroASP.Infrastructure.Controllers
 
                 try
                 {
+                    //Marca la entidad Usuarios como modificada
+                    /*El método Entry en el contexto de Entity Framework Core se utiliza para obtener un objeto 
+                     * que puede usarse para configurar y realizar acciones en una entidad que está siendo rastreada por el contexto.*/
                     _context.Entry(user).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                 }
+                //esta excepcion es lanzada cuando varios usuarios modifican al mismo tiempo los datos. Por ejemplo
+                //tenemos un usuario llamado A que esta modificando los datos y todavia no ha guardado esos cambios pero
+                //tenemos un usuario B que tiene que modificar los datos que esta modificando el usuario A y el usuario B 
+                //guarda los datos antes que el A por lo tanto al usuario A tener datos antiguos se produce esta excepcion al usuario
+                //A no tener los datos actuales
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!UserExists(user.Id))
@@ -265,7 +294,12 @@ namespace IntroASP.Infrastructure.Controllers
                     }
                     else
                     {
-                        throw;
+                        // Recarga los datos del usuario desde la base de datos
+                        _context.Entry(user).Reload();
+
+                        // Intenta guardar de nuevo
+                        _context.Entry(user).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
                     }
                 }
                 return RedirectToAction("Index");
@@ -278,10 +312,11 @@ namespace IntroASP.Infrastructure.Controllers
           
             return _context.Usuarios.Any(e => e.Id == Id);
         }
-      
+
 
 
         //Vista que se muestra al eliminar el usuario
+        [Authorize(Roles = "administrador")]
         public async Task<IActionResult> Delete(int id)
         {
             //Si el id es nulo da un error 404
@@ -320,7 +355,10 @@ namespace IntroASP.Infrastructure.Controllers
             return RedirectToAction(nameof(Index));
         }
         //Este metodo toma el email por ruta y ademas envia un email al usuario con lo que tiene que hacer para resetear la contraseña
+     
+
         [Route("UserController/ResetPassword/{email}")]
+        [Authorize(Roles = "administrador")]
         //Esto le muestra una vista al administrador
         public async Task<IActionResult> ResetPassword(string email)
         {
@@ -333,7 +371,9 @@ namespace IntroASP.Infrastructure.Controllers
             return View(usuarioDB);
         }
         //De ese email que se ha enviado del enlace tomamos el id de usuario y el token que no es token lo que genera es un
-        //identificador unico
+        //identificador unico, este identificador se genero cuando el usuario se registro, con esto nos asguramos de que la contraseña
+        //se cambia para el usuario correcto
+        [AllowAnonymous]
         [Route("UserController/RestorePassword/{UserId}/{Token}")]
         public async Task<IActionResult> RestorePassword(DTORestorePass cambio)
         {
@@ -360,7 +400,8 @@ namespace IntroASP.Infrastructure.Controllers
             return View(restorePass);
         }
         //En la vista para restaurar la contraseña llamamos a este metodo para que la contraseña sea restaurada
-      
+        //esto es la logica que hay detras del formulario para restaurar la contraseña
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> RestorePasswordUser(DTORestorePass cambio)
         {

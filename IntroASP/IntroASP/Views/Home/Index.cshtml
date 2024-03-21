@@ -1,55 +1,76 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<html>
+    <head>
+        <style>
+            ul {
+            list-style:none;
+            }
+            li{
+            list-style: none;
+        }
+        </style>
+    </head>
+    <body>
+    <div class="text-center">
+        <h1 class="display-4">Bienvenido</h1>
+        <p>Bienvenido a mi primera pagina web echa con ASP .NET MVC. La pagina cuenta con las siguientes funciones:</p>
+        <ul>
+            <li>
+                Panel para administrar usuarios el cual tiene:
+                <ul>
+                    <li>Creacion de usuarios</li>
+                    <li>Eliminacion de usuarios</li>
+                    <li>Actualizacion de datos del usuario</li>
+                    <li>Recuperacion de contraseña </li>
+                </ul>
+            </li>
+            <li>
+                Funcionamiento de recuperacion de contraseña:
+                <ul>
+                    <li>
+                        <p>
+                            Su funcionamiento es el siguiente el administrador hace clic en recuperar contraseña y al realizar clic
+                            se envia un correo electronico al usuario seleccionado, el usuario recibe un email que contiene una contraseña
+                            temporal y un enlace para restablecer la contraseña el usuario podra restablecer su contraseña si este proporciona
+                            antes la temporal esto se pone para mas seguridad.
+                        </p>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Funcionamiento de creacion de un usuario:
+                <ul>
+                    <li>
+                        <p>
+                            El administrador es el encargado de crear el usuario, el administrador tendra los datos del usuario como
+                            su correo electronico, nombre completo, direccion y telefono. Una vez creada la cuenta el administrador solicitara
+                            al usuario que confirme su direccion de correo electronico.
+                        </p>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                Funcionamiento de actualizacion de un usuario:
+                <ul>
+                    <li>
+                        <p>
+                            El administrador podra actualizar los datos del usuario, el administrador lo unico que no puede es saber
+                            la contraseña del usuario
+                        </p>
+                    </li>
+                </ul>
+            </li>
+            <li>Creacion de cervezas</li>
+            <li>Creacion de marcas de cerveza</li>
+        </ul>
+        <p>Posibles preguntas</p>
+        <p>¿Por que el usuario no crea su propia cuenta?</p>
+        <p>El motivo por el que no crea su propia cuenta es porque al momento de crearla se le tiene que poner un rol a esa cuenta</p>
+        <p>¿Quien tiene acceso al panel de administrador?</p>
+        <p>El unico que tendra acceso al panel de administrador es el administrador</p>
+    </div>
 
-<div class="text-center">
-    <h1 class="display-4">Bienvenido</h1>
-    <p>Bienvenido a mi primera pagina web echa con ASP .NET MVC. La pagina cuenta con las siguientes funciones:</p>
-    <ul>
-        <li>Panel para administrar usuarios el cual tiene: 
-            <ul>
-                <li>Creacion de usuarios</li>
-                <li>Eliminacion de usuarios</li>
-                <li>Actualizacion de datos del usuario</li>
-                <li>Recuperacion de contraseña </li>
-            </ul>
-        </li>
-        <li>Funcionamiento de recuperacion de contraseña:
-            <ul>
-                <li>
-                    <p>Su funcionamiento es el siguiente el administrador hace clic en recuperar contraseña y al realizar clic
-                        se envia un correo electronico al usuario seleccionado, el usuario recibe un email que contiene una contraseña
-                        temporal y un enlace para restablecer la contraseña el usuario podra restablecer su contraseña si este proporciona 
-                        antes la temporal esto se pone para mas seguridad.
-                    </p>
-                </li>
-            </ul>
-        </li>
-        <li>Funcionamiento de creacion de un usuario:
-            <ul>
-                <li>
-                    <p>El administrador es el encargado de crear el usuario, el administrador tendra los datos del usuario como
-                        su correo electronico, nombre completo, direccion y telefono. Una vez creada la cuenta el administrador solicitara 
-                        al usuario que confirme su direccion de correo electronico.
-                    </p>
-                </li>
-            </ul>
-        </li>
-        <li>Funcionamiento de actualizacion de un usuario:
-            <ul>
-                <li>
-                    <p>El administrador podra actualizar los datos del usuario, el administrador lo unico que no puede es saber
-                        la contraseña del usuario
-                    </p>
-                </li>
-            </ul>
-        </li>
-        <li>Creacion de cervezas</li>
-        <li>Creacion de marcas de cerveza</li>
-    </ul>
-    <p>Posibles preguntas</p>
-    <p>¿Por que el usuario no crea su propia cuenta?</p>
-    <p>El motivo por el que no crea su propia cuenta es porque al momento de crearla se le tiene que poner un rol a esa cuenta</p>
-    <p>¿Quien tiene acceso al panel de administrador?</p>
-    <p>El unico que tendra acceso al panel de administrador es el administrador</p>
-</div>
+    </body>
+</html>

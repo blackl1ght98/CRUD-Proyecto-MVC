@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IntroASP.Infrastructure.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="usuario")]
     public class BrandController : Controller
     {
         //Al igual que en un proyecto tipo web api se crea un controlador vacio aqui se crea igual
@@ -40,6 +40,7 @@ namespace IntroASP.Infrastructure.Controllers
         //public async Task<IActionResult> Index2()
 
         // => View(await _context.Brands.ToListAsync());
+        //Reedirige a la vista de creacion
         public IActionResult Create()
         {
 
@@ -62,12 +63,14 @@ namespace IntroASP.Infrastructure.Controllers
                 };
                 _context.Add(beer);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Los datos se han creado con éxito.";
 
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
 
         }
+        //Obtiene los datos a eliminar
         public async Task<IActionResult> Delete(int id)
         {
             if (id == null)
@@ -87,7 +90,7 @@ namespace IntroASP.Infrastructure.Controllers
             return View(brand);
         }
 
-
+        //Realiza la accion de eliminar
         [HttpPost, ActionName("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
         //Para que detecte la id de la cerveza es necesario poner el mismo nombre que se ponga en la vista en la
@@ -102,8 +105,11 @@ namespace IntroASP.Infrastructure.Controllers
             _context.Beers.RemoveRange(brand.Beers);
             _context.Brands.Remove(brand);
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Los datos se han eliminado con éxito.";
+
             return RedirectToAction(nameof(Index));
         }
+        //Obtencion de los datos a editar, va a la vista para editar
         public async Task<ActionResult> Edit(int id)
         {
             Brand brand = await _context.Brands.FindAsync(id);
@@ -127,6 +133,8 @@ namespace IntroASP.Infrastructure.Controllers
                     // await _context.SaveChangesAsync(); guarda los cambios en la base de datos.
                     _context.Entry(brand).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Los datos se han modificado con éxito.";
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -136,7 +144,11 @@ namespace IntroASP.Infrastructure.Controllers
                     }
                     else
                     {
-                        throw;
+                        _context.Entry(brand).Reload();
+
+                        // Intenta guardar de nuevo
+                        _context.Entry(brand).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
                     }
                 }
                 return RedirectToAction("Index");

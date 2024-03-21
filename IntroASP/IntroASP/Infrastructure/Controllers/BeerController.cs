@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using static Org.BouncyCastle.Asn1.Cmp.Challenge;
 
 namespace IntroASP.Infrastructure.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="usuario")]
     public class BeerController : Controller
     {
         //Inyeccion de dependencias
@@ -53,6 +54,8 @@ namespace IntroASP.Infrastructure.Controllers
                 };
                 _context.Add(beer);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Los datos se han creado con éxito.";
+
                 //retornamos aqui para ver las cervezas agregadas 
                 return RedirectToAction(nameof(Index));
             }
@@ -115,6 +118,8 @@ namespace IntroASP.Infrastructure.Controllers
             }
             _context.Beers.Remove(beer);
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Los datos se han eliminado con éxito.";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -145,6 +150,8 @@ namespace IntroASP.Infrastructure.Controllers
 
                     _context.Entry(beer).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Los datos se han modificado con éxito.";
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -154,7 +161,11 @@ namespace IntroASP.Infrastructure.Controllers
                     }
                     else
                     {
-                        throw;
+                        _context.Entry(beer).Reload();
+
+                        // Intenta guardar de nuevo
+                        _context.Entry(beer).State = EntityState.Modified;
+                        await _context.SaveChangesAsync();
                     }
                 }
                 return RedirectToAction("Index");

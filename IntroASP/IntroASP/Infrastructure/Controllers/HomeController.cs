@@ -17,7 +17,10 @@ namespace IntroASP.Infrastructure.Controllers
         {
             return View();
         }
-
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
 
     }

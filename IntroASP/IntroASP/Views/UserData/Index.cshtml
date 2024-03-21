@@ -1,0 +1,48 @@
+﻿@using IntroASP.Models.ViewModels
+@model UserDataEditViewModel
+
+<div class="container">
+    <h2>Editar perfil</h2>
+
+    <form  asp-controller="UserData"  asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group">
+            <label asp-for="Email">Email:</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Password">Contraseña:</label>
+            <input asp-for="Password" type="password" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NombreCompleto">Nombre completo:</label>
+            <input asp-for="NombreCompleto" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="FechaNacimiento">Fecha de nacimiento:</label>
+            <input asp-for="FechaNacimiento" type="date" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Telefono">Teléfono:</label>
+            <input asp-for="Telefono" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Direccion">Dirección:</label>
+            <input asp-for="Direccion" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2">Guardar cambios</button>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </form>
+</div>
