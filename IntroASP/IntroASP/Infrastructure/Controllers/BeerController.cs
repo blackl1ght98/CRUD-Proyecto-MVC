@@ -47,6 +47,7 @@ namespace IntroASP.Infrastructure.Controllers
             //Esto toma en cuenta las validaciones puestas en BeerViewModel
             if (ModelState.IsValid)
             {
+                //Crea la cerveza
                 var beer = new Beer()
                 {
                     Name = model.Name,
@@ -54,6 +55,7 @@ namespace IntroASP.Infrastructure.Controllers
                 };
                 _context.Add(beer);
                 await _context.SaveChangesAsync();
+                //Mensaje temporal que se muestra en caso de exito
                 TempData["SuccessMessage"] = "Los datos se han creado con éxito.";
 
                 //retornamos aqui para ver las cervezas agregadas 
@@ -86,11 +88,7 @@ namespace IntroASP.Infrastructure.Controllers
         // GET: Beer/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            //Si el id es nulo da un error 404
-            if (id == null)
-            {
-                return NotFound("Cerveza no encontrada");
-            }
+          
             //Consulta a base de datos
             var beer = await _context.Beers
 
@@ -146,8 +144,9 @@ namespace IntroASP.Infrastructure.Controllers
                 {
                     // Carga la Brand desde la base de datos
                     beer.Brand = await _context.Brands.FindAsync(beer.BrandId);
+                    //Crea el desplegable de Marcas
                     ViewData["Brands"] = new SelectList(_context.Brands, "BrandId", "Name", beer.BrandId);
-
+                    //Marca la entidad como modificada
                     _context.Entry(beer).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Los datos se han modificado con éxito.";
@@ -175,7 +174,7 @@ namespace IntroASP.Infrastructure.Controllers
 
         private bool BeerExists(int BeerId)
         {
-            Console.WriteLine("BeerId: " + BeerId);  // Agrega esta línea para depurar
+            Console.WriteLine("BeerId: " + BeerId);  
             return _context.Beers.Any(e => e.BeerId == BeerId);
         }
 

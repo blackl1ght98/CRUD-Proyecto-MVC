@@ -1,22 +1,5 @@
 ﻿@model Brand
-@* @using (Html.BeginForm())
-{
-    @Html.ValidationSummary(true)
-    <fieldset>
-        @Html.HiddenFor(model => model.BrandId) <!-- Esta linea es necesaria para saber que id de cerveza se esta editando -->
-        <div class="editor-label">
-            @Html.LabelFor(model => model.Name)
-        </div>
-        <div class="editor-field">
-            @Html.EditorFor(model => model.Name)
-            @Html.ValidationMessageFor(model => model.Name)
-        </div>
 
-        <p>
-            <input type="submit" value="Save" />
-        </p>
-    </fieldset>
-} *@
 <h2>Editar Marca</h2>
 
 <form asp-action="Edit" asp-controller="Brand" method="post">

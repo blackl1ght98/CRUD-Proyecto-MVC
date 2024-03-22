@@ -32,7 +32,7 @@ namespace IntroASP.Infrastructure.Controllers
             _changePassService = changePassService;
             _contextAccessor = contextAccessor;
         }
-        //Vista principal del controlador donde alvergara las funciones de este controlador
+        //Vista principal del controlador donde alverga las funciones de este controlador
         //Aqui hemos usado la vista principal para traer todos los datos del usuario
 
         public IActionResult Index()
@@ -45,7 +45,7 @@ namespace IntroASP.Infrastructure.Controllers
             var usuarios = _context.Usuarios.Include(x=>x.IdRolNavigation).ToList();
             return View(usuarios);
         }
-        //Como en la vista principal se han obtenido todos los datos de procede a actualizar el rol
+        //Como en la vista principal se han obtenido todos los datos se procede a actualizar el rol
         //UpdateRole no tiene ninguna vista independiente porque ya se llama en la vista principal
 
         [Authorize(Roles = "administrador")]
@@ -59,8 +59,9 @@ namespace IntroASP.Infrastructure.Controllers
             }
             //crea el desplegable
             ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
-
+            //Le asigna el rol al usuario
             user.IdRol = newRole;
+            //Actualiza en base de datos 
             _context.Usuarios.Update(user);
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
@@ -81,7 +82,7 @@ namespace IntroASP.Infrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model)
         {
-            //Esto toma en cuenta las validaciones puestas en BeerViewModel
+            //Esto toma en cuenta las validaciones puestas en UserViewModel
             if (ModelState.IsValid)
             {
                 // Verificar si el email ya existe en la base de datos
@@ -92,7 +93,7 @@ namespace IntroASP.Infrastructure.Controllers
                     ModelState.AddModelError("Email", "Este email ya está registrado.");
                     return View(model);
                 }
-
+                //Hashea la contraseña
                 var resultadoHash = _hashService.Hash(model.Password);
                 var user = new Usuario()
                 {
@@ -109,9 +110,11 @@ namespace IntroASP.Infrastructure.Controllers
                 };
                 //Sirve para crear el desplegable
                 ViewData["Roles"] = new SelectList(_context.Roles, "Id", "Nombre");
-
+                //Agrega el usuario a base de datos
                 _context.Add(user);
+                //Guarda los cambios
                 await _context.SaveChangesAsync();
+                //Envia el correo electronico al usuario para que confirme su email
                 await _emailService.SendEmailAsyncRegister(new DTOEmail
                 {
                     ToEmail = model.Email
@@ -163,24 +166,38 @@ namespace IntroASP.Infrastructure.Controllers
                     // Comprobar si el correo electrónico ha sido confirmado
                     if (!user.ConfirmacionEmail)
                     {
+                        //Con esto creas un error personalizado
                         ModelState.AddModelError("", "Por favor, confirma tu correo electrónico antes de iniciar sesión.");
                         return View(model);
                     }
-
+                    //Se llama al servicio hash service
                     var resultadoHash = _hashService.Hash(model.Password, user.Salt);
-
+                    //Si la contraseña que se introduce es igual a la que hay en base de datos se procede al login
                     if (user.Password == resultadoHash.Hash)
                     {
+                        // Crear una lista de reclamaciones (claims) para el usuario
                         var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, user.Email),
+                         {
+                             // Agregar el email del usuario como una reclamación de tipo Name
+                             new Claim(ClaimTypes.Name, user.Email),
+                            // Agregar el rol del usuario como una reclamación de tipo Role
                             new Claim(ClaimTypes.Role, user.IdRolNavigation.Nombre),
-                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),//Maneja que usuario esta logueado actualmente
+                            // Agregar el ID del usuario como una reclamación de tipo NameIdentifier
+                            // Esto se utiliza para identificar al usuario que está actualmente logueado
+                            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                         };
-
+                        /*Un esquema de autenticación es un método que se utiliza para verificar la identidad de un usuario 
+                         * antes de permitirle acceder a un sistema o aplicación. En otras palabras, es el proceso que sigue un 
+                         * sistema para confirmar que eres quien dices ser.*/
+                        // Crear una identidad para el usuario con las reclamaciones y el esquema de autenticación por defecto
                         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                        // Crear un principal con la identidad del usuario
+                        // Un principal representa la seguridad del usuario en .NET
                         var principal = new ClaimsPrincipal(identity);
 
+                        // Iniciar sesión con el principal del usuario
+                        // Esto establece la cookie de autenticación en el navegador del usuario
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                         return RedirectToAction("Index", "Beer");
@@ -200,6 +217,7 @@ namespace IntroASP.Infrastructure.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
+            //Elimina de las cookies del navegador las cookie del usuario
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
@@ -224,14 +242,8 @@ namespace IntroASP.Infrastructure.Controllers
             // Pasas el ViewModel a la vista
             return View(viewModel);
         }
-
-
-
-
         //Cuando quieres editar algo de tu modelo de base de datos pero no quieres que se puedan editar determinados campos
         //lo que se realiza es una vista del modelo para especificar que campos se quieren cambiar (UsuarioEditViewModel)
-
-
         [HttpPost]
         public async Task<ActionResult> Edit(UsuarioEditViewModel userVM)
         {
@@ -245,14 +257,11 @@ namespace IntroASP.Infrastructure.Controllers
                 {
                     return NotFound("Usuario no encontrado");
                 }
-
                 // Mapea los datos del ViewModel a la entidad
                 user.NombreCompleto = userVM.NombreCompleto;
                 user.FechaNacimiento=userVM.FechaNacimiento;
                 user.Telefono = userVM.Telefono;
                 user.Direccion = userVM.Direccion;
-             
-
                 //Esto ocurre cuando el usuario cambia de email 
                 if (user != null && user.Email != userVM.Email)
                 {
@@ -273,9 +282,6 @@ namespace IntroASP.Infrastructure.Controllers
                     //Si el usuario no cambia el email se queda igual
                     user.Email = userVM.Email;
                 }
-             
-
-
                 try
                 {
                     //Marca la entidad Usuarios como modificada
@@ -303,7 +309,7 @@ namespace IntroASP.Infrastructure.Controllers
                 {
                     if (!UserExists(user.Id))
                     {
-                        return NotFound();
+                        return NotFound("Usuario no encontrado");
                     }
                     else
                     {
@@ -352,18 +358,18 @@ namespace IntroASP.Infrastructure.Controllers
         //El asp-for si tu ahi le pasar Id lo que va a ir a buscar es algo que sea Id si se pone en minuscula no lo encuentra
         public async Task<IActionResult> DeleteConfirmed(int Id)
         {
+            //Busca al usuario en base de datos
             var user = await _context.Usuarios.FirstOrDefaultAsync(m => m.Id == Id);
             if (user == null)
             {
                 return BadRequest();
             }
+            //Elimina el usuario y guarda los cambios
             _context.Usuarios.Remove(user);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
         //Este metodo toma el email por ruta y ademas envia un email al usuario con lo que tiene que hacer para resetear la contraseña
-     
-
         [Route("UserController/ResetPassword/{email}")]
         [Authorize(Roles = "administrador")]
         //Esto le muestra una vista al administrador
@@ -384,12 +390,13 @@ namespace IntroASP.Infrastructure.Controllers
         [Route("UserController/RestorePassword/{UserId}/{Token}")]
         public async Task<IActionResult> RestorePassword(DTORestorePass cambio)
         {
+            //Se busca al usuario por Id
             var usuarioDB = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == cambio.UserId);
             if (usuarioDB.Email == null)
             {
                 return BadRequest("Email no encontrado");
             }
-
+            //Si el enlace que se genero en el registro se altero ese enlace no sera valido
             if (usuarioDB.EnlaceCambioPass != cambio.Token)
             {
                 return BadRequest("Token no valido");
@@ -412,29 +419,41 @@ namespace IntroASP.Infrastructure.Controllers
         [HttpPost]
         public async Task<IActionResult> RestorePasswordUser(DTORestorePass cambio)
         {
+            //Busca al usuario por Id
             var usuarioDB = await _context.Usuarios.FirstOrDefaultAsync(x => x.Id == cambio.UserId);
+            //Si la id es nula devuelve el siguiente error
             if (usuarioDB == null)
             {
                 return BadRequest("Usuario no encontrado");
             }
-            // Comprobar si la contraseña es nula
+            // Comprobar si la contraseña es nula 
             if (string.IsNullOrEmpty(cambio.Password))
             {
                 return BadRequest("La contraseña no puede estar vacía");
             }
-            // Comprobar si la contraseña temporal es válida
+            //Se usa el servicio hashService para cifrar la contraseña
             var resultadoHashTemp = _hashService.Hash(cambio.TemporaryPassword);
+            //Se genera un hash para esa contraseña
             usuarioDB.TemporaryPassword = resultadoHashTemp.Hash;
+            //Se genera un salt para esa contraseña
             usuarioDB.Salt = resultadoHashTemp.Salt;
+            //Si la contraseña temporal que hay en base de datos es distinta a la que se ha proporcionado por correo o el salt es distinto
+            //al que hay en base de datos da error 
+
             if (usuarioDB.TemporaryPassword != resultadoHashTemp.Hash || usuarioDB.Salt != resultadoHashTemp.Salt)
             {
                 return BadRequest("La contraseña temporal no es válida");
             }
+            //si todo ha ido bien se actualiza con la contraseña temporal 
             _context.Usuarios.Update(usuarioDB);
+            //Se guarda en base de datos
             await _context.SaveChangesAsync();
+            //Se usa el servicio hash service para hashear la contraseña proporcionada por el usuario
             var resultadoHash = _hashService.Hash(cambio.Password);
-            // Actualizar la contraseña del usuario
+            //Se asigna un hash a la contraseña que proporciono el usuario
             usuarioDB.Password = resultadoHash.Hash;
+            //Se asigna un salt a la contraseña que proporciono el usuario
+
             usuarioDB.Salt = resultadoHash.Salt;
 
             // Guardar los cambios en la base de datos
@@ -445,7 +464,7 @@ namespace IntroASP.Infrastructure.Controllers
         }
 
 
-
+       
 
     }
 }

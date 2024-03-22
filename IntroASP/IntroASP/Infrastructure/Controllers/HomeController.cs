@@ -1,7 +1,8 @@
 ﻿using IntroASP.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 namespace IntroASP.Infrastructure.Controllers
 {
     public class HomeController : Controller
@@ -21,7 +22,6 @@ namespace IntroASP.Infrastructure.Controllers
         {
             return View();
         }
-
-
+       
     }
 }

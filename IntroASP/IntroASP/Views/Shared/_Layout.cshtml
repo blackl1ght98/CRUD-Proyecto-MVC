@@ -67,14 +67,23 @@
                  puedes enviar la misma carta a diferentes amigos (funcionalidades a diferentes controladores) 
                  o puedes enviar diferentes cartas al mismo amigo (diferentes funcionalidades al mismo controlador).
                 -->
+               
                 <li class="nav-item">
                     <a asp-controller="User" asp-action="Login" class="btn btn-info mt-2">Iniciar sesion</a>
 
                 </li>
+               
                 <li class="nav-item">
                     <a asp-controller="User" asp-action="Logout" class="btn btn-warning mt-2">Cerrar sesion</a>
 
                 </li>
+                @if (Context.User.Identity.IsAuthenticated)
+                {
+                    <li>
+                        <a> Bienvenido @User.Identity.Name</a>
+                    </li>
+
+                }
                 
             </ul>
         </div>

@@ -56,6 +56,7 @@ namespace IntroASP.Infrastructure.Controllers
             //Esto toma en cuenta las validaciones puestas en BeerViewModel
             if (ModelState.IsValid)
             {
+                //Crea la marca
                 var beer = new Brand()
                 {
                     Name = model.Name,
@@ -73,10 +74,7 @@ namespace IntroASP.Infrastructure.Controllers
         //Obtiene los datos a eliminar
         public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            
 
             var brand = await _context.Brands
 
@@ -97,12 +95,15 @@ namespace IntroASP.Infrastructure.Controllers
         //parte del asp-for del formulario
         public async Task<IActionResult> DeleteConfirmed(int BrandId)
         {
+            //Obtine las marcas junto con sus cervezas y las busca por id
             var brand = await _context.Brands.Include(x => x.Beers).FirstOrDefaultAsync(m => m.BrandId == BrandId);
             if (brand == null)
             {
                 return BadRequest();
             }
+            //Elimina las cervezas asociadas a la marca
             _context.Beers.RemoveRange(brand.Beers);
+            //Elimina la marca
             _context.Brands.Remove(brand);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Los datos se han eliminado con éxito.";
@@ -112,6 +113,7 @@ namespace IntroASP.Infrastructure.Controllers
         //Obtencion de los datos a editar, va a la vista para editar
         public async Task<ActionResult> Edit(int id)
         {
+            //Busca la marca por id
             Brand brand = await _context.Brands.FindAsync(id);
             return View(brand);
         }
